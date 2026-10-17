@@ -89,25 +89,28 @@ var state='menu',score=0,parcels=0,dist=0,speed=3.1,frames=0;
 var best=parseInt(localStorage.getItem('sky-courier-best')||'0',10)||0;
 document.getElementById('hud-best').textContent=best;
 var py=H*0.45,vy=0,thrusting=false,tilt=0;
-var gravity=0.42,lift=-0.78;
+var gravity=0.22,lift=-0.42;
+var MAX_FALL=5.2,MAX_RISE=-4.6;
 var obstacles=[],pickups=[],particles=[],clouds=[];
 for(var i=0;i<7;i++)clouds.push({x:Math.random()*W,y:20+Math.random()*220,s:0.5+Math.random(),v:0.3+Math.random()*0.5});
 function reset(){score=0;parcels=0;dist=0;speed=3.1;frames=0;py=H*0.45;vy=0;obstacles=[];pickups=[];particles=[];updateHud();}
 function updateHud(){document.getElementById('hud-score').textContent=Math.floor(score);document.getElementById('hud-parcels').textContent=parcels;document.getElementById('hud-best').textContent=Math.max(best,Math.floor(score));}
 function spawnObstacle(){
-  var gap=Math.max(150,210-dist*0.012);
-  var gy=120+Math.random()*(H-240-gap);
+  var gap=Math.max(190,250-dist*0.008);
+  var gy=90+Math.random()*(H-220-gap);
   var kind=Math.random();
-  obstacles.push({x:W+40,gapY:gy,gapH:gap,w:74,passed:false,kind:kind<0.72?'tower':(kind<0.87?'drone':'bird'),bob:Math.random()*6.28,y:H/2+(Math.random()-0.5)*260});
+  obstacles.push({x:W+40,gapY:gy,gapH:gap,w:74,passed:false,kind:kind<0.72?'tower':(kind<0.87?'drone':'bird'),bob:Math.random()*6.28,y:H/2+(Math.random()-0.5)*220});
 }
-function spawnPickup(){pickups.push({x:W+30,y:90+Math.random()*(H-200),taken:false,spin:Math.random()*6});}
+function spawnPickup(){pickups.push({x:W+30,y:110+Math.random()*(H-240),taken:false,spin:Math.random()*6});}
 function collide(){
-  var px=200,pr=20;
-  if(py<-30||py>H-34)return true;
+  var px=200,pr=17;
+  // Ceiling is safe: slide along the top instead of dying.
+  // Only the floor/rooftops (bottom) and obstacles kill.
+  if(py>H-34)return true;
   for(var i=0;i<obstacles.length;i++){
     var o=obstacles[i];
     if(o.kind==='tower'){if(px+pr>o.x&&px-pr<o.x+o.w){if(py-pr<o.gapY||py+pr>o.gapY+o.gapH)return true;}}
-    else{var oy=o.y+Math.sin(frames/22+o.bob)*34;var dx=px-(o.x+20),dy=py-oy;if(dx*dx+dy*dy<(pr+19)*(pr+19))return true;}
+    else{var oy=o.y+Math.sin(frames/22+o.bob)*30;var dx=px-(o.x+20),dy=py-oy;if(dx*dx+dy*dy<(pr+17)*(pr+17))return true;}
   }
   return false;
 }
@@ -220,13 +223,18 @@ function step(){
   frames++;
   clouds.forEach(function(c){c.x-=c.v;if(c.x<-70){c.x=W+60;c.y=20+Math.random()*220;}});
   if(state==='playing'){
+    // Floaty jetpack feel: gentle gravity, soft thrust, clamped speeds.
+    // Hold to rise smoothly, release to sink slowly. Ceiling is safe.
     vy+=gravity;if(thrusting)vy+=lift;
-    vy=Math.max(-8.5,Math.min(9.5,vy));py+=vy;
-    tilt=Math.max(-0.45,Math.min(0.5,vy*0.06));
-    dist+=speed;speed=Math.min(6.4,3.1+dist*0.0009);
+    if(vy>MAX_FALL)vy=MAX_FALL;
+    if(vy<MAX_RISE)vy=MAX_RISE;
+    py+=vy;
+    if(py<26){py=26;vy=Math.max(0,vy);} // bonk the sky, don't die
+    tilt=Math.max(-0.35,Math.min(0.4,vy*0.07));
+    dist+=speed;speed=Math.min(5.2,2.6+dist*0.0006);
     score+=0.12+speed*0.02;
-    if(frames%82===0)spawnObstacle();
-    if(frames%150===0)spawnPickup();
+    if(frames%96===0)spawnObstacle();
+    if(frames%160===0)spawnPickup();
     obstacles.forEach(function(o){
       o.x-=speed;
       if(!o.passed&&o.x+60<200){o.passed=true;score+=10;beep(660,0.07,'sine',0.03);}
@@ -289,6 +297,7 @@ function startGame(){
   document.getElementById('overlay-start').hidden=true;
   document.getElementById('overlay-over').hidden=true;
   document.getElementById('overlay-board').hidden=true;
+  document.getElementById('overlay-how').hidden=true;
   beep(520,0.12,'square',0.05);
 }
 function gameOver(){
@@ -305,7 +314,22 @@ function gameOver(){
 }
 document.getElementById('btn-start').addEventListener('click',startGame);
 document.getElementById('btn-again').addEventListener('click',startGame);
-document.getElementById('btn-how').addEventListener('click',function(){var t=document.getElementById('how-text');t.hidden=!t.hidden;});
+function openHow(){
+  document.getElementById('overlay-start').hidden=true;
+  document.getElementById('overlay-over').hidden=true;
+  document.getElementById('overlay-board').hidden=true;
+  document.getElementById('overlay-how').hidden=false;
+}
+function closeHow(){
+  document.getElementById('overlay-how').hidden=true;
+  document.getElementById(state==='over'?'overlay-over':'overlay-start').hidden=false;
+}
+document.getElementById('btn-how').addEventListener('click',openHow);
+document.getElementById('btn-how2').addEventListener('click',openHow);
+document.getElementById('btn-close-how').addEventListener('click',function(){
+  closeHow();
+  if(state==='menu'||state==='over')startGame();
+});
 document.getElementById('btn-board').addEventListener('click',showBoard);
 document.getElementById('btn-board2').addEventListener('click',showBoard);
 document.getElementById('btn-close-board').addEventListener('click',function(){
@@ -315,6 +339,7 @@ document.getElementById('btn-close-board').addEventListener('click',function(){
 window.addEventListener('keydown',function(e){
   if(e.code==='Space'||e.code==='ArrowUp'){
     e.preventDefault();
+    if(!document.getElementById('overlay-how').hidden){closeHow();if(state==='menu'||state==='over')startGame();thrusting=true;return;}
     if((state==='menu'||state==='over')&&!document.getElementById('overlay-board').hidden)return;
     if(state==='menu'||state==='over')startGame();
     thrusting=true;
