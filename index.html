@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Cloud Courier — a start.ng game</title>
+<link rel="stylesheet" href="./style.css">
+<meta name="description" content="Cloud Courier: strap on a jetpack as your start.ng character, dodge sky-drones and deliver parcels across the rooftops.">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="startng-card" id="player-card">
+      <img id="player-face" alt="player face" width="48" height="48">
+      <div class="pinfo">
+        <b id="player-name">Guest</b>
+        <span id="player-account">Not signed in</span>
+      </div>
+      <button id="player-sign-in">Sign in</button>
+    </div>
+    <div class="title-wrap">
+      <h1>CLOUD COURIER</h1>
+      <p class="sub">deliver parcels • dodge drones • beat the board</p>
+    </div>
+    <div class="hud-pills">
+      <div class="pill">SCORE <b id="hud-score">0</b></div>
+      <div class="pill">PARCELS <b id="hud-parcels">0</b></div>
+      <div class="pill">BEST <b id="hud-best">0</b></div>
+    </div>
+  </header>
+
+  <main id="stage-wrap">
+    <canvas id="game" width="960" height="600"></canvas>
+
+    <div id="overlay-start" class="overlay">
+      <div class="card">
+        <h2>Become the sky's fastest courier</h2>
+        <p><b>Hold SPACE / click / touch</b> to fire your jetpack and climb.<br>Release to glide down. Grab <span class="box-emoji">📦</span> parcels, dodge <span class="box-emoji">🚁</span> drones &amp; birds.</p>
+        <div class="controls-row">
+          <button id="btn-start" class="big">▶ &nbsp;Start delivery run</button>
+          <button id="btn-how" class="ghost">How to play</button>
+        </div>
+        <p id="how-text" hidden>Each parcel = <b>+50</b>. Distance ticks up your score. Hitting a drone, bird or rooftop ends the run — your best run is saved to the shared start.ng leaderboard when you're signed in.</p>
+        <p class="tiny">Playing as <b id="overlay-player">Guest</b> • sign in with start.ng to save your score to the shared board.</p>
+      </div>
+    </div>
+
+    <div id="overlay-over" class="overlay" hidden>
+      <div class="card">
+        <h2 id="over-title">Run over!</h2>
+        <p id="over-stats" class="big-stats">0 pts • 0 parcels</p>
+        <p id="over-saved" class="tiny">…</p>
+        <div class="controls-row">
+          <button id="btn-again" class="big">↻ &nbsp;Fly again</button>
+          <button id="btn-board" class="ghost">Leaderboard</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay-board" class="overlay" hidden>
+      <div class="card">
+        <h2>Top couriers</h2>
+        <ol id="board"></ol>
+        <p id="board-note" class="tiny"></p>
+        <div class="controls-row">
+          <button id="btn-close-board" class="big">Close</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="foot">
+    <button id="btn-mute" class="chip" title="sound on/off">🔊 sound</button>
+    <button id="btn-board2" class="chip">🏆 leaderboard</button>
+    <span class="hint">space / click / touch = thrust • P = pause</span>
+  </footer>
+</div>
+<script src="./game.js"></script>
+</body>
+</html>
