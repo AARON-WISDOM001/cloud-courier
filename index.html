@@ -26,6 +26,9 @@
     <div class="hud-pills">
       <div class="pill">SCORE <b id="hud-score">0</b></div>
       <div class="pill">PARCELS <b id="hud-parcels">0</b></div>
+      <div class="pill">LIVES <b id="hud-hearts">0</b></div>
+      <div class="pill">COMBO <b id="hud-combo"></b></div>
+      <div class="pill" id="pill-power" hidden>POWER <b id="hud-power"></b></div>
       <div class="pill">BEST <b id="hud-best">0</b></div>
     </div>
   </header>
@@ -36,7 +39,7 @@
     <div id="overlay-start" class="overlay">
       <div class="card">
         <h2>Become the sky's fastest courier</h2>
-        <p><b>Hold SPACE / click / touch</b> to float up — release to sink down.<br>Thread the gaps between towers, grab <span class="box-emoji">📦</span> parcels, dodge <span class="box-emoji">🚁</span> drones &amp; birds. The sky is safe — only towers, drones and the rooftops can end your run.</p>
+        <p><b>Up: hold SPACE / tap above you • Down: hold ↓ / tap below.</b> It floats where you leave it.<br>Thread the gaps between towers, grab <span class="box-emoji">📦</span> parcels, dodge <span class="box-emoji">🚁</span> drones &amp; birds. The sky is safe — only towers, drones and the rooftops can end your run.</p>
         <div class="diff-row" id="diff-row">
           <button class="chip diff" data-diff="easy">Easy</button>
           <button class="chip diff" data-diff="medium">Medium</button>
@@ -82,11 +85,14 @@
     <div id="overlay-how" class="overlay" hidden>
       <div class="card how-card">
         <h2>How to play</h2>
-        <p class="how-fly"><b>Hold SPACE / click / touch</b> to float up — <b>release</b> to sink down. Thread the gaps. The sky is safe: bonk it all you like.</p>
+        <p class="how-fly"><b>Up: hold SPACE / tap above • Down: hold ↓ / tap below.</b> It floats where you leave it. The sky is safe: bonk it all you like.</p>
         <div class="how-grid">
           <div class="how-row good"><span class="how-icon">📦</span><div><b>Parcel +50</b><span>Fly into it to grab it. Your pay!</span></div></div>
-          <div class="how-row good"><span class="how-icon">🚪</span><div><b>Gap +10</b><span>Thread towers cleanly for bonus.</span></div></div>
-          <div class="how-row bad"><span class="how-icon">🏢</span><div><b>Towers kill</b><span>Clip the edge and the run ends.</span></div></div>
+          <div class="how-row good"><span class="how-icon">❤️</span><div><b>Heart save</b><span>Take one crash for you. Hold up to 3.</span></div></div>
+          <div class="how-row good"><span class="how-icon">🎁</span><div><b>Power-ups</b><span>🧲 magnet, ⚡ ×2 score, 🛡️ shield.</span></div></div>
+          <div class="how-row good"><span class="how-icon">🔥</span><div><b>Combo</b><span>Grab parcels in a row: ×2, ×3… one miss or hit breaks it.</span></div></div>
+          <div class="how-row good"><span class="how-icon">🚪</span><div><b>Gap +10</b><span>Thread towers cleanly for bonus. Tight pass = near-miss bonus!</span></div></div>
+          <div class="how-row bad"><span class="how-icon">🏢</span><div><b>Towers kill</b><span>Clip the edge and the run ends — unless a heart saves you.</span></div></div>
           <div class="how-row bad"><span class="how-icon">🚁</span><div><b>Drones &amp; birds kill</b><span>They bob up and down — time it.</span></div></div>
           <div class="how-row bad"><span class="how-icon">🟫</span><div><b>Rooftops kill</b><span>Don't sink into the floor strip.</span></div></div>
           <div class="how-row safe"><span class="how-icon">☁️</span><div><b>Sky is safe</b><span>Flying high never kills you.</span></div></div>
