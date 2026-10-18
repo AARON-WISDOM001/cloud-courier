@@ -71,20 +71,41 @@ function loadPlayer(){
   });
 }
 document.addEventListener('visibilitychange',function(){if(!document.hidden)loadPlayer();});
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){if(musicTimer){clearInterval(musicTimer);musicTimer=null;}}
+  else if(state==='playing')startMusic();
+});
 window.addEventListener('focus',loadPlayer);
-var audioOn=true,actx=null;
+var audioOn=true,actx=null,master=null;
+var masterVol=parseFloat(localStorage.getItem('sky-courier-vol'));
+if(isNaN(masterVol))masterVol=0.8;
+function ensureAudio(){
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  if(!master){master=actx.createGain();master.gain.value=masterVol;master.connect(actx.destination);}
+  return actx;
+}
 function beep(freq,dur,type,vol){
   if(!audioOn)return;
   try{
-    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    ensureAudio();
     var o=actx.createOscillator(),g=actx.createGain();
     o.type=type||'square';o.frequency.value=freq;g.gain.value=vol||0.05;
-    o.connect(g);g.connect(actx.destination);o.start();
+    o.connect(g);g.connect(master);o.start();
     g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+dur);
     o.stop(actx.currentTime+dur);
   }catch(e){}
 }
-document.getElementById('btn-mute').addEventListener('click',function(e){audioOn=!audioOn;e.target.textContent=audioOn?'🔊 sound':'🔇 muted';});
+document.getElementById('btn-mute').addEventListener('click',function(e){
+  audioOn=!audioOn;e.target.textContent=audioOn?'🔊 sound':'🔇 muted';
+  if(master)master.gain.value=audioOn?masterVol:0;
+});
+var volEl=document.getElementById('vol');
+volEl.value=Math.round(masterVol*100);
+volEl.addEventListener('input',function(){
+  masterVol=volEl.value/100;
+  if(master)master.gain.value=audioOn?masterVol:0;
+  try{localStorage.setItem('sky-courier-vol',String(masterVol));}catch(e){}
+});
 var MELODY=[784,659,587,659,784,880,784,659,698,587,523,587,698,784,698,587],
     BASS=[130.81,130.81,146.83,196],musicTimer=null,mNote=0,mTime=0;
 function playTone(f,t,dur,type,vol){
@@ -94,13 +115,13 @@ function playTone(f,t,dur,type,vol){
     g.gain.setValueAtTime(0.0001,t);
     g.gain.exponentialRampToValueAtTime(vol,t+0.02);
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+dur+0.03);
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.03);
   }catch(e){}
 }
 function startMusic(){
   if(musicTimer)return;
   try{
-    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    ensureAudio();
     if(actx.state==='suspended')actx.resume();
   }catch(e){return;}
   mNote=0;mTime=actx.currentTime+0.15;
