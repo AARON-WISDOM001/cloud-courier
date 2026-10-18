@@ -325,11 +325,11 @@ function setDiff(d){
   if(!DIFFS[d])d='easy';
   diff=d;
   try{localStorage.setItem('sky-courier-diff',d);}catch(e){}
-  document.querySelectorAll('#diff-row .diff').forEach(function(b){
+  document.querySelectorAll('.diff-row .diff').forEach(function(b){
     b.classList.toggle('on',b.dataset.diff===d);
   });
 }
-document.querySelectorAll('#diff-row .diff').forEach(function(b){
+document.querySelectorAll('.diff-row .diff').forEach(function(b){
   b.addEventListener('click',function(){setDiff(b.dataset.diff);});
 });
 setDiff(diff);
