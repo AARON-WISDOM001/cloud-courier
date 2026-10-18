@@ -85,6 +85,35 @@ function beep(freq,dur,type,vol){
   }catch(e){}
 }
 document.getElementById('btn-mute').addEventListener('click',function(e){audioOn=!audioOn;e.target.textContent=audioOn?'🔊 sound':'🔇 muted';});
+var MELODY=[784,659,587,659,784,880,784,659,698,587,523,587,698,784,698,587],
+    BASS=[130.81,130.81,146.83,196],musicTimer=null,mNote=0,mTime=0;
+function playTone(f,t,dur,type,vol){
+  try{
+    var o=actx.createOscillator(),g=actx.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+dur+0.03);
+  }catch(e){}
+}
+function startMusic(){
+  if(musicTimer)return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended')actx.resume();
+  }catch(e){return;}
+  mNote=0;mTime=actx.currentTime+0.15;
+  musicTimer=setInterval(function(){
+    while(mTime<actx.currentTime+0.4){
+      if(audioOn){
+        playTone(MELODY[mNote%MELODY.length],mTime,0.16,'triangle',0.04);
+        if(mNote%4===0)playTone(BASS[(mNote/4|0)%BASS.length],mTime,0.7,'sine',0.05);
+      }
+      mNote++;mTime+=0.2;
+    }
+  },120);
+}
 var DIFFS={
   easy:{speed:2.2,max:3.8,gap:300,gapMin:240,spawn:120},
   medium:{speed:3.0,max:5.0,gap:260,gapMin:200,spawn:100},
@@ -300,7 +329,7 @@ function showBoard(){
   });
 }
 function startGame(){
-  reset();state='playing';
+  reset();state='playing';startMusic();
   document.getElementById('overlay-start').hidden=true;
   document.getElementById('overlay-over').hidden=true;
   document.getElementById('overlay-board').hidden=true;
@@ -367,7 +396,7 @@ window.addEventListener('keydown',function(e){
   if(e.code==='Enter'&&(state==='menu'||state==='over'))startGame();
 });
 window.addEventListener('keyup',function(e){if(e.code==='Space'||e.code==='ArrowUp')thrusting=false;});
-canvas.addEventListener('pointerdown',function(e){e.preventDefault();thrusting=true;if(actx&&actx.state==='suspended')actx.resume();});
+canvas.addEventListener('pointerdown',function(e){e.preventDefault();thrusting=true;startMusic();if(actx&&actx.state==='suspended')actx.resume();});
 window.addEventListener('pointerup',function(){thrusting=false;});
 canvas.addEventListener('pointerleave',function(){thrusting=false;});
 canvas.addEventListener('contextmenu',function(e){e.preventDefault();});
