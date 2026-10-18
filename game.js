@@ -85,7 +85,13 @@ function beep(freq,dur,type,vol){
   }catch(e){}
 }
 document.getElementById('btn-mute').addEventListener('click',function(e){audioOn=!audioOn;e.target.textContent=audioOn?'🔊 sound':'🔇 muted';});
-var state='menu',score=0,parcels=0,dist=0,speed=3.1,frames=0;
+var DIFFS={
+  easy:{speed:2.2,max:3.8,gap:300,gapMin:240,spawn:120},
+  medium:{speed:3.0,max:5.0,gap:260,gapMin:200,spawn:100},
+  hard:{speed:3.8,max:6.4,gap:230,gapMin:170,spawn:88}
+};
+var diff=localStorage.getItem('sky-courier-diff')||'easy';
+var state='menu',score=0,parcels=0,dist=0,speed=DIFFS[diff].speed,frames=0;
 var best=parseInt(localStorage.getItem('sky-courier-best')||'0',10)||0;
 document.getElementById('hud-best').textContent=best;
 var py=H*0.45,vy=0,thrusting=false,tilt=0;
@@ -93,10 +99,11 @@ var gravity=0.22,lift=-0.42;
 var MAX_FALL=5.2,MAX_RISE=-4.6;
 var obstacles=[],pickups=[],particles=[],clouds=[];
 for(var i=0;i<7;i++)clouds.push({x:Math.random()*W,y:20+Math.random()*220,s:0.5+Math.random(),v:0.3+Math.random()*0.5});
-function reset(){score=0;parcels=0;dist=0;speed=3.1;frames=0;py=H*0.45;vy=0;obstacles=[];pickups=[];particles=[];updateHud();}
+function reset(){score=0;parcels=0;dist=0;speed=DIFFS[diff].speed;frames=0;py=H*0.45;vy=0;obstacles=[];pickups=[];particles=[];updateHud();}
 function updateHud(){document.getElementById('hud-score').textContent=Math.floor(score);document.getElementById('hud-parcels').textContent=parcels;document.getElementById('hud-best').textContent=Math.max(best,Math.floor(score));}
 function spawnObstacle(){
-  var gap=Math.max(190,250-dist*0.008);
+  var d=DIFFS[diff];
+  var gap=Math.max(d.gapMin,d.gap-dist*0.006);
   var gy=90+Math.random()*(H-220-gap);
   var kind=Math.random();
   obstacles.push({x:W+40,gapY:gy,gapH:gap,w:74,passed:false,kind:kind<0.72?'tower':(kind<0.87?'drone':'bird'),bob:Math.random()*6.28,y:H/2+(Math.random()-0.5)*220});
@@ -231,9 +238,9 @@ function step(){
     py+=vy;
     if(py<26){py=26;vy=Math.max(0,vy);} // bonk the sky, don't die
     tilt=Math.max(-0.35,Math.min(0.4,vy*0.07));
-    dist+=speed;speed=Math.min(5.2,2.6+dist*0.0006);
+    dist+=speed;speed=Math.min(DIFFS[diff].max,DIFFS[diff].speed+dist*0.00045);
     score+=0.12+speed*0.02;
-    if(frames%96===0)spawnObstacle();
+    if(frames%DIFFS[diff].spawn===0)spawnObstacle();
     if(frames%160===0)spawnPickup();
     obstacles.forEach(function(o){
       o.x-=speed;
@@ -314,6 +321,18 @@ function gameOver(){
 }
 document.getElementById('btn-start').addEventListener('click',startGame);
 document.getElementById('btn-again').addEventListener('click',startGame);
+function setDiff(d){
+  if(!DIFFS[d])d='easy';
+  diff=d;
+  try{localStorage.setItem('sky-courier-diff',d);}catch(e){}
+  document.querySelectorAll('#diff-row .diff').forEach(function(b){
+    b.classList.toggle('on',b.dataset.diff===d);
+  });
+}
+document.querySelectorAll('#diff-row .diff').forEach(function(b){
+  b.addEventListener('click',function(){setDiff(b.dataset.diff);});
+});
+setDiff(diff);
 function openHow(){
   document.getElementById('overlay-start').hidden=true;
   document.getElementById('overlay-over').hidden=true;
